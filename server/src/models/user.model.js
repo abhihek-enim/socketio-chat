@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
       trim: true,
       minlength: 3,
     },
@@ -31,6 +30,10 @@ const userSchema = new mongoose.Schema(
     profilePicture: {
       type: String,
       default: "",
+    },
+    bio: {
+      type: String,
+      default: " ",
     },
     status: {
       type: String,
