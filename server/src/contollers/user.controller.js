@@ -98,12 +98,12 @@ export const loginUser = async (req, res, next) => {
       .json(new ApiResponse(500, {}, "Something went wrong while login."));
   }
 };
-export const getUser = async (req, res, next) => {
+export const getUserByEmail = async (req, res, next) => {
   const { email } = req.body;
   if (!email) {
     return res.status(400).json(new ApiResponse(400, {}, "Email is required."));
   }
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("-password");
   if (!user) {
     return res
       .status(404)
@@ -113,38 +113,40 @@ export const getUser = async (req, res, next) => {
 };
 
 export const updateProfile = async (req, res, next) => {
-  const userId = req.user._id;
-  const { username, bio } = req.body;
-  if (!username || !bio) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, {}, "Fields are required"));
-  }
-  const profileImageLocalPath = req.files?.profileImage[0]?.path;
-  if (!profileImageLocalPath) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, {}, "Profile Image is required"));
-  }
-
-  const profileImage = await uploadOnCloudinary(profileImageLocalPath);
-
-  if (!profileImage) {
-    return res
-      .status(500)
-      .json(new ApiResponse(500, {}, "Server error during image upload."));
-  }
-  const user = await User.findByIdAndUpdate(
-    userId,
-    {
-      $set: { username, bio: bio, profilePicture: profileImage },
-    },
-    {
-      new: true,
+  try {
+    const userId = req.user._id;
+    const { username, bio } = req.body;
+    if (!username || !bio) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Fields are required"));
     }
-  ).select("-password");
+    const profileImageLocalPath = req.files?.profileImage[0]?.path;
+    if (!profileImageLocalPath) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Profile Image is required"));
+    }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Profile updated successfully"));
+    const profileImage = await uploadOnCloudinary(profileImageLocalPath);
+    if (!profileImage) {
+      return res
+        .status(500)
+        .json(new ApiResponse(500, {}, "Server error during image upload."));
+    }
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { username, bio: bio, profilePicture: profileImage.url },
+      },
+      {
+        new: true,
+      }
+    ).select("-password");
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Profile updated successfully"));
+  } catch (error) {
+    console.log(error);
+  }
 };
