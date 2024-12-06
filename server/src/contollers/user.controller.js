@@ -121,19 +121,25 @@ export const updateProfile = async (req, res, next) => {
         .status(400)
         .json(new ApiResponse(400, {}, "Fields are required"));
     }
-    const profileImageLocalPath = req.files?.profileImage[0]?.path;
-    if (!profileImageLocalPath) {
+
+    const profileImageLocalPath = req.files?.profilePicture?.[0]?.path;
+    let profileImage = req.user?.profilePicture || "";
+    if (!req.user?.profilePicture && !profileImageLocalPath) {
       return res
         .status(400)
         .json(new ApiResponse(400, {}, "Profile Image is required"));
     }
 
-    const profileImage = await uploadOnCloudinary(profileImageLocalPath);
-    if (!profileImage) {
-      return res
-        .status(500)
-        .json(new ApiResponse(500, {}, "Server error during image upload."));
+    if (profileImageLocalPath) {
+      profileImage = await uploadOnCloudinary(profileImageLocalPath);
+
+      if (!profileImage) {
+        return res
+          .status(500)
+          .json(new ApiResponse(500, {}, "Server error during image upload."));
+      }
     }
+
     const user = await User.findByIdAndUpdate(
       userId,
       {
@@ -148,5 +154,37 @@ export const updateProfile = async (req, res, next) => {
       .json(new ApiResponse(200, user, "Profile updated successfully"));
   } catch (error) {
     console.log(error);
+  }
+};
+export const searchUsers = async (req, res, next) => {
+  const { searchQuery } = req.body;
+
+  if (!searchQuery) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Search query is required."));
+  }
+
+  try {
+    const users = await User.find({
+      $or: [
+        { email: { $regex: searchQuery, $options: "i" } },
+        { username: { $regex: searchQuery, $options: "i" } },
+      ],
+    }).select("-password");
+
+    if (!users.length) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, {}, "No users match your search."));
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, users, "Users fetched successfully."));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, {}, "An error occurred during search."));
   }
 };

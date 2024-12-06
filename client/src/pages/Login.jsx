@@ -5,14 +5,14 @@ import { AppContext } from "../context/AppContext.jsx";
 import { toast } from "react-toastify";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [state, setState] = useState("SignUp");
-  const { setUser } = useContext(AppContext);
+  const { setUser, showLoader, hideLoader } = useContext(AppContext);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
   });
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,15 +24,23 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    showLoader();
     try {
       const handleResponse = (res) => {
         if (res.success) {
-          setUser(res.user);
-          if (res.token) {
-            localStorage.setItem("chatToken", res.token);
+          console.log(res);
+          setUser(res.data.user);
+          // localStorage.setItem("chatUser", res.data.user);
+          if (res.data.token) {
+            localStorage.setItem("chatToken", res.data.token);
           }
-          navigate("/chat");
+          if (state === "SignUp") {
+            hideLoader();
+            navigate("/update-profile");
+          } else {
+            hideLoader();
+            navigate("/chat");
+          }
           setFormData({
             username: "",
             email: "",
@@ -41,6 +49,7 @@ const Login = () => {
         } else {
           console.error("Error:", res.message || "Unknown error occurred");
           toast.error("Error:", res.message || "Unknown error occurred");
+          hideLoader();
         }
       };
 
@@ -53,11 +62,12 @@ const Login = () => {
           password: formData.password,
         });
       }
-
+      console.log(res);
       handleResponse(res);
     } catch (error) {
       console.error("Error during form submission:", error.message);
       toast.error("Error:", error.message || "Unknown error occurred");
+      hideLoader();
     }
   };
 

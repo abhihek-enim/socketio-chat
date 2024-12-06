@@ -16,7 +16,7 @@ router.post("/getUser", verifyAuth, getUserByEmail);
 router
   .route("/updateProfile")
   .post(
-    upload.fields([{ name: "profileImage", maxCount: 1 }]),
+    upload.fields([{ name: "profilePicture", maxCount: 1 }]),
     verifyAuth,
     updateProfile
   );

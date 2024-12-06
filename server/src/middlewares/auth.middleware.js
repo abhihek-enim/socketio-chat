@@ -22,6 +22,6 @@ export const verifyAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
+    console.log(error.message, "While token auth");
   }
 };
