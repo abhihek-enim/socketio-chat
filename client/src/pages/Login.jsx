@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { postData } from "../utils/apiService.js";
+import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext.jsx";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [state, setState] = useState("SignUp");
+  const { setUser } = useContext(AppContext);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,9 +22,43 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    try {
+      const handleResponse = (res) => {
+        if (res.success) {
+          setUser(res.user);
+          if (res.token) {
+            localStorage.setItem("chatToken", res.token);
+          }
+          navigate("/chat");
+          setFormData({
+            username: "",
+            email: "",
+            password: "",
+          });
+        } else {
+          console.error("Error:", res.message || "Unknown error occurred");
+          toast.error("Error:", res.message || "Unknown error occurred");
+        }
+      };
+
+      let res;
+      if (state === "SignUp") {
+        res = await postData("/user/registerUser", formData);
+      } else {
+        res = await postData("/user/login", {
+          email: formData.email,
+          password: formData.password,
+        });
+      }
+
+      handleResponse(res);
+    } catch (error) {
+      console.error("Error during form submission:", error.message);
+      toast.error("Error:", error.message || "Unknown error occurred");
+    }
   };
 
   return (
