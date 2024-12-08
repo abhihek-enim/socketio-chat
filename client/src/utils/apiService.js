@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_URL,
@@ -10,6 +11,7 @@ const handleError = (error) => {
   if (error.response) {
     console.error("Server responded with status:", error.response.status);
     console.error("Response data:", error.response.data);
+    toast.error(error.response.data.message);
   } else if (error.request) {
     console.error("Request made but no response received:", error.request);
   } else {

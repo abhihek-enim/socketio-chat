@@ -22,6 +22,7 @@ export const verifyAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error.message, "While token auth");
+    console.log(error.message);
+    return res.status(400).json(new ApiResponse(400, {}, "Login Again"));
   }
 };

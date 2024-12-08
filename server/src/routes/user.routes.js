@@ -3,6 +3,7 @@ import {
   getUserByEmail,
   loginUser,
   registerUser,
+  searchUsers,
   updateProfile,
 } from "../contollers/user.controller.js";
 import { verifyAuth } from "../middlewares/auth.middleware.js";
@@ -20,4 +21,5 @@ router
     verifyAuth,
     updateProfile
   );
+router.post("/search-user", verifyAuth, searchUsers);
 export default router;

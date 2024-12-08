@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { postData } from "../utils/apiService.js";
+
 const users = [
   {
     profilePicture: "/avatar_icon.png",
@@ -32,6 +35,40 @@ const users = [
 ];
 
 const LeftSideBar = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchedUsers, setSearchedUsers] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      handleSearch(debouncedQuery);
+    } else {
+      setSearchedUsers("");
+    }
+  }, [debouncedQuery]);
+
+  const handleSearch = async (searchQuery) => {
+    try {
+      let res = await postData("/user/search-user", {
+        searchQuery: searchQuery,
+      });
+      if (res.success) {
+        let data = res.data;
+        setSearchedUsers(data);
+      } else {
+        setSearchedUsers("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div
       className="max-w-md w-full space-y-8 
@@ -48,8 +85,8 @@ const LeftSideBar = () => {
           name="username"
           type="text"
           required
-          //   value={formData.username}
-          //   onChange={handleChange}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="appearance-none rounded-md relative block w-full px-3 py-2 
                   bg-white bg-opacity-20 backdrop-blur-lg 
                   border border-white border-opacity-30 
@@ -57,9 +94,38 @@ const LeftSideBar = () => {
                   focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
           placeholder="Search Friend.."
         />
+
+        {searchedUsers?.length > 0 && (
+          <div className="mt-3">
+            {searchedUsers.map((user, index) => (
+              <div
+                key={index}
+                className="flex justify-start items-center cursor-pointer border-b-2 border-gray-500 "
+              >
+                <img
+                  src={
+                    user.profilePicture
+                      ? user.profilePicture
+                      : "/avatar_icon.png"
+                  }
+                  className="w-8"
+                  alt=""
+                />
+                <div className="px-3 py-2">
+                  <h3 className="text-[#ffffff] text-sm font-semibold">
+                    {user.username}
+                  </h3>
+                  <p className="text-base text-[#ECDFCC] font-medium">
+                    {user?.lastMessage}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="bg-gradient-to-b from-blue-400 via-indigo-400 to-red-300 p-3 rounded-lg ">
+      <div className="  bg-[#3C3D37] p-3 rounded-lg overflow-auto h-[60vh]  ">
         {users.map((user, index) => (
           <div
             key={index}
@@ -67,10 +133,10 @@ const LeftSideBar = () => {
           >
             <img src={user.profilePicture} className="w-12" alt="" />
             <div className="px-3 py-2">
-              <h3 className="text-white text-xl font-semibold">
+              <h3 className="text-[#ffffff] text-xl font-semibold">
                 {user.username}
               </h3>
-              <p className="text-base text-gray-700 font-medium">
+              <p className="text-base text-[#ECDFCC] font-medium">
                 {user.lastMessage}
               </p>
             </div>
