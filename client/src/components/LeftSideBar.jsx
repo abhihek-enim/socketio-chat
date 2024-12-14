@@ -71,7 +71,7 @@ const LeftSideBar = () => {
   };
   return (
     <div
-      className="max-w-md w-full space-y-8 
+      className=" h-[90vh] max-w-md w-full space-y-8 
     bg-white bg-opacity-20 backdrop-blur-lg 
      shadow-2xl  border-opacity-20 
     p-10"
@@ -133,10 +133,10 @@ const LeftSideBar = () => {
           >
             <img src={user.profilePicture} className="w-12" alt="" />
             <div className="px-3 py-2">
-              <h3 className="text-[#ffffff] text-xl font-semibold">
+              <h3 className="text-[#ffffff] text-base font-semibold">
                 {user.username}
               </h3>
-              <p className="text-base text-[#ECDFCC] font-medium">
+              <p className="text-sm text-[#ECDFCC] font-medium">
                 {user.lastMessage}
               </p>
             </div>

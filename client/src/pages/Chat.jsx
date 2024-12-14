@@ -14,7 +14,10 @@ const Chat = () => {
     py-12 px-4 sm:px-6 lg:px-8"
     >
       <LeftSideBar />
-      <ChatBox />
+      <div className="flex-1">
+        {" "}
+        <ChatBox />
+      </div>
       <RightSideBar />
     </div>
   );
